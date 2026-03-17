@@ -1,19 +1,21 @@
 services:
   # The "Agent": MCP Bridge + Trivy + GitHub Tools
-  security-agent:
+  llama-security-agent:
     build: .
     container_name: llama-security-agent
     env_file: .env
     environment:
+      - OLLAMA_URL=http://host.docker.internal:11434
       - OLLAMA_HOST=http://host.docker.internal:11434
       - GITHUB_PERSONAL_ACCESS_TOKEN=${GITHUB_TOKEN} # Loaded from your local .env file
     volumes:
-      - ./src:/app/src
+      - .:/app
       - /var/run/docker.sock:/var/run/docker.sock # Allows Trivy to scan host images
     extra_hosts:
       - "host.docker.internal:host-gateway"
     command: >
-      npx @jonigl/ollama-mcp-bridge 
-      --config mcp-config.json 
-      --system-prompt-file agent_prompt.md
+      /bin/sh -c "ollama-mcp-bridge 
+      --config /app/mcp-config.json 
+      --port 8000 
+      --system-prompt \"$(cat /app/agent_prompt.md)\""
 
