@@ -1,0 +1,12 @@
+ {
+    "mcpServers": {
+        "trivy": {
+            "command": "trivy",
+            "args": ["mcp"]
+        },
+        "github": {
+            "command": "npx",
+            "args": ["-y", "@modelcontextprotocol/server-github"]
+        }
+    }
+}

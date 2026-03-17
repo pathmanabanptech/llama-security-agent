@@ -1,0 +1,18 @@
+# Secrets
+.env
+*.token
+*.pem
+
+# Dependencies
+node_modules/
+dist/
+
+# Local AI Data
+ollama_data/
+*.bin
+*.gguf
+
+# Logs & Temp
+logs/
+npm-debug.log*
+.DS_Store
