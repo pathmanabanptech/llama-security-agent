@@ -36,14 +36,29 @@ The **llama-security-agent** solves these challenges by shifting the paradigm fr
     ```
   
 3. **Launch the Agent**
-     - Pull the model: `ollam pull llama3.1`
+     - Launch llama on your mac: `ollam run llama3.1`
+     - Open a Terminal and run:
+        ```bash
+        OLLAMA_HOST=0.0.0.0 ollama serve
+        ``` 
+    *(keep this terminal open)*
 
     - Run the bridge to connect Llama to the MCP tools:
         ```bash
         # Start the containers
-        docker-compose up -d
-        ```
+        docker-compose up --build -d
 
+        # Verify the agent
+        docker logs -f llama-security-agent
+        ```
+    - Test your Agent
+        ```
+        curl -X POST http://localhost:8000/prompt \
+            -H "Content-Type: application/json" \
+            -d '{
+            "prompt": "Perform an autonomous security audit. If Trivy finds High/Critical vulnerabilities, fix them by creating a branch and submitting a Pull Request."
+            }'
+        ```
 4. **Example Agent Workflow:**
 
     Once running, you can prompt the agent (via any MCP-compatible client or the bridge API) with:
