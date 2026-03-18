@@ -1,8 +1,8 @@
  {
     "mcpServers": {
         "trivy": {
-            "command": "trivy",
-            "args": ["mcp"]
+            "command": "npx",
+            "args": ["-y", "@aquasecurity/mcp-server-trivy"]
         },
         "github": {
             "command": "npx",

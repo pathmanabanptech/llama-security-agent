@@ -13,6 +13,23 @@ The **llama-security-agent** solves these challenges by shifting the paradigm fr
 - **Reproducible Infrastructure:** Fully containerized via Docker Compose for consistent enterprise deployment.
 - **Zero-Friction DevSecOps:** The agent acts as a "Digital Pair Programmer" that handles the grunt work of identifying "Policy-Clean" versions and preparing PRs,  allowing engineers to stay in the "flow state" and focus on feature delivery rather than security debt.
 
+## Architecture 
+![System Architecture](./assets/agent_archi.jpg)
+
+### Key Components:
+* **Reasoning Engine:** Local Llama 3.1 via Ollama (Hardware accelerated).
+* **Orchestration:** `ollama-mcp-bridge` acting as a stateless proxy.
+* **Security Scanner:** Trivy MCP Server for filesystem vulnerability discovery.
+* **GitOps:** GitHub MCP Server for automated branch management and PR creation.
+
+The agent operates on a **Observe-Orient-Decide-Act (OODA)** loop:
+
+- **Observe:** Reads package.json using GitHub MCP.
+- **Orient:** Executes a Trivy scan to identify CVEs and "Fixed Versions."
+- **Decide:** Llama reasons if the fix is safe to apply (e.g., no breaking major version changes).
+- **Act:** Commits the change and opens a PR with a detailed security summary.
+
+
 ## Tech Stack
 - **AI Brain:** Llama 3.1 (8B/70B) via [Ollama](https://ollama.com/)
 - **Protocol:** [Model Context Protocol (MCP)](https://modelcontextprotocol.io/docs/getting-started/intro)
@@ -36,21 +53,29 @@ The **llama-security-agent** solves these challenges by shifting the paradigm fr
     ```
   
 3. **Launch the Agent**
-     - Pull the model: `ollam pull llama3.1`
+    - Launch llama on your mac: `ollam run llama3.1`
+        *(keep this terminal open)*
 
     - Run the bridge to connect Llama to the MCP tools:
         ```bash
         # Start the containers
-        docker-compose up -d
+        docker compose up -d
+
+        # Verify the agent
+        docker logs -f llama-security-agent
+        ```
+    - Test your Agent
+        ```
+        curl -X POST http://localhost:8000/prompt \
+            -H "Content-Type: application/json" \
+            -d '{
+                "model": "llama3.1",
+                "messages": [{"role": "user", "content": "Run security audit and fix vulnerabilities."}],
+                "stream": false
+            }'
         ```
 
-4. **Example Agent Workflow:**
-
-    Once running, you can prompt the agent (via any MCP-compatible client or the bridge API) with:
-    
-    "Perform a comprehensive security audit of the repository. Identify all **Critical** and **High** vulnerabilities across all dependencies. For each unique vulnerability, determine the policy-compliant fixed version, branch the code, and prepare an automated remediation Pull Request."
-
-5. **Enterprise Hosting Models:**
+4. **Enterprise Hosting Models:**
 
 As a cloud-native solution, this agent can be scaled across various environments:
 
@@ -58,13 +83,6 @@ As a cloud-native solution, this agent can be scaled across various environments
 - **Private Cloud (AWS/Azure/GCP):** Hosted on GPU-enabled instances (e.g., EC2 g5.xlarge) within a private VPC.
 - **On-Prem Kubernetes:** Deployed as a sidecar to CI/CD runners (Jenkins/GitLab) to provide real-time remediation during the build phase.
 
-## Architectural Design
-The agent operates on a **Observe-Orient-Decide-Act (OODA)** loop:
-
-- **Observe:** Reads package.json using GitHub MCP.
-- **Orient:** Executes a Trivy scan to identify CVEs and "Fixed Versions."
-- **Decide:** Llama reasons if the fix is safe to apply (e.g., no breaking major version changes).
-- **Act:** Commits the change and opens a PR with a detailed security summary.
 
 ## Security & Privacy
 This project was built with Finance and Healthcare grade privacy in mind. By using a Llama instance, we avoid the risks associated with sending proprietary codebases to third-party LLM providers. All tool calls and reasoning happen within your execution environment.

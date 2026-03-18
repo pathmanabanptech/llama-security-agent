@@ -3,6 +3,8 @@ services:
   llama-security-agent:
     build: .
     container_name: llama-security-agent
+    ports:
+      - "8000:8000"
     env_file: .env
     environment:
       - OLLAMA_URL=http://host.docker.internal:11434
